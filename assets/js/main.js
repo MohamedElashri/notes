@@ -4,6 +4,13 @@
 * You can now easily generate elegant and concise code from scratch using GPT.
 */
 
+// Initialize Mermaid with default configuration
+mermaid.initialize({ 
+    startOnLoad: false,
+    theme: 'default',
+    securityLevel: 'loose'
+});
+
 // Memos Start
 var memo = {
     host: 'https://demo.usememos.com/',
@@ -278,7 +285,26 @@ function updateHTMl(data) {
             .replace(QQVIDEO_REG, "<div class='video-wrapper'><iframe src='//v.qq.com/iframe/player.html?vid=$1' allowFullScreen='true' frameborder='no'></iframe></div>")
             .replace(SPOTIFY_REG, "<div class='spotify-wrapper'><iframe style='border-radius:12px' src='https://open.spotify.com/embed/$1/$2?utm_source=generator&theme=0' width='100%' frameBorder='0' allowfullscreen='' allow='autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture' loading='lazy'></iframe></div>")
             .replace(YOUKU_REG, "<div class='video-wrapper'><iframe src='https://player.youku.com/embed/$1' frameborder=0 'allowfullscreen'></iframe></div>")
-            .replace(YOUTUBE_REG, "<div class='video-wrapper'><iframe src='https://www.youtube.com/embed/$1' title='YouTube video player' frameborder='0' allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture' allowfullscreen title='YouTube Video'></iframe></div>")
+            .replace(YOUTUBE_REG, "<div class='video-wrapper'><iframe src='https://www.youtube.com/embed/$1' title='YouTube video player' frameborder='0' allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture' allowfullscreen title='YouTube Video'></iframe></div>");
+
+        // Process mermaid diagrams
+        if (memoContREG.includes('language-mermaid')) {
+            setTimeout(() => {
+                document.querySelectorAll('pre code.language-mermaid').forEach((element) => {
+                    // Create a new div for mermaid
+                    const mermaidDiv = document.createElement('div');
+                    mermaidDiv.classList.add('mermaid');
+                    mermaidDiv.innerHTML = element.textContent;
+                    
+                    // Replace the <pre><code> with the new div
+                    const preElement = element.parentElement;
+                    preElement.parentElement.replaceChild(mermaidDiv, preElement);
+                });
+                
+                // Re-run mermaid
+                mermaid.run();
+            }, 100);
+        }
 
         // Parse built-in resource files
         if (memo.APIVersion === 'new') {
