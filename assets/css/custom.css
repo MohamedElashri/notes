@@ -1,0 +1,15 @@
+/* Style for links */
+a {
+    color: #0066cc; /* A nice shade of blue */
+    text-decoration: none; /* Removes the default underline */
+}
+
+a:hover {
+    text-decoration: underline; /* Adds underline on hover for better UX */
+    color: #0052a3; /* Slightly darker blue on hover */
+}
+
+/* Style for visited links */
+a:visited {
+    color: #551a8b; /* Traditional purple for visited links */
+}
