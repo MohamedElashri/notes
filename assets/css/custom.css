@@ -13,3 +13,15 @@ a:hover {
 a:visited {
     color: #551a8b; /* Traditional purple for visited links */
 }
+
+/* Preserve whitespace in content areas */
+.markdown-body p,
+.memos p,
+blockquote p {
+    white-space: pre-line;
+    margin-bottom: 1em;
+}
+
+.memos .memo-content {
+    white-space: pre-line;
+}
