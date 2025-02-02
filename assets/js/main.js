@@ -47,6 +47,8 @@ var nextPageToken = '';
 var btnRemove = 0
 var memoDom = document.querySelector(memo.domId);
 var load = '<button class="load-btn button-load">Loading...</button>'
+var noMoreMessage = '<div class="no-more-notes">No more notes available</div>'
+
 if (memoDom) {
     memoDom.insertAdjacentHTML('afterend', load);
     getFirstList() // Initial data load
@@ -55,13 +57,14 @@ if (memoDom) {
     var btn = document.querySelector("button.button-load");
     btn.addEventListener("click", function () {
         btn.textContent = 'Loading...';
-        updateHTMl(nextDom)
-        if (nextLength < limit) { // Returned data count is less than the limit, hide
-            document.querySelector("button.button-load").remove()
-            btnRemove = 1
-            return
+        if (nextDom && nextDom.length > 0) {
+            updateHTMl(nextDom);
+            getNextList();
+        } else {
+            document.querySelector("button.button-load").remove();
+            memoDom.insertAdjacentHTML('afterend', noMoreMessage);
+            btnRemove = 1;
         }
-        getNextList()
     });
 }
 
@@ -75,6 +78,7 @@ function getFirstList() {
             var nowLength = resdata.length
             if (nowLength < limit) { // Returned data count is less than the limit, remove "Load more" button and stop preloading
                 document.querySelector("button.button-load").remove()
+                memoDom.insertAdjacentHTML('afterend', noMoreMessage);
                 btnRemove = 1
                 return
             }
@@ -88,6 +92,7 @@ function getFirstList() {
             var nowLength = resdata.length
             if (nowLength < limit) { // Returned data count is less than the limit, remove "Load more" button and stop preloading
                 document.querySelector("button.button-load").remove()
+                memoDom.insertAdjacentHTML('afterend', noMoreMessage);
                 btnRemove = 1
                 return
             }
@@ -105,17 +110,27 @@ function getNextList() {
     if (memo.APIVersion === 'new') {
         var memoUrl_next = memoUrl + '&pageSize=' + limit + '&pageToken=' + nextPageToken;
         fetch(memoUrl_next).then(res => res.json()).then(resdata => {
-            nextPageToken = resdata.nextPageToken;
-            nextDom = resdata
-            nextLength = nextDom.length
-            page++
-            offset = limit * (page - 1)
-            if (nextLength < 1) { // Returned data count is 0, hide
-                document.querySelector("button.button-load").remove()
-                btnRemove = 1
-                return
+            if (resdata && resdata.length > 0) {
+                nextDom = resdata;
+                nextLength = nextDom.length;
+                nextPageToken = resdata.nextPageToken;
+                
+                if (nextLength < limit) {
+                    document.querySelector("button.button-load").remove();
+                    memoDom.insertAdjacentHTML('afterend', noMoreMessage);
+                    btnRemove = 1;
+                }
+            } else {
+                document.querySelector("button.button-load").remove();
+                memoDom.insertAdjacentHTML('afterend', noMoreMessage);
+                btnRemove = 1;
             }
-        })
+        }).catch(error => {
+            console.error('Error fetching next page:', error);
+            document.querySelector("button.button-load").remove();
+            memoDom.insertAdjacentHTML('afterend', '<div class="no-more-notes">Error loading notes</div>');
+            btnRemove = 1;
+        });
         
     } else if (memo.APIVersion === 'legacy') {
         if (tag){
@@ -124,15 +139,27 @@ function getNextList() {
             var memoUrl_next = memoUrl + "&limit=" + limit + "&offset=" + offset;
         }
         fetch(memoUrl_next).then(res => res.json()).then(resdata => {
-            nextDom = resdata
-            nextLength = nextDom.length
-            page++
-            offset = limit * (page - 1)
-            if (nextLength < 1) { // Returned data count is 0, hide
-                document.querySelector("button.button-load").remove()
-                btnRemove = 1
-                return
+            if (resdata && resdata.length > 0) {
+                nextDom = resdata
+                nextLength = nextDom.length
+                page++
+                offset = limit * (page - 1)
+                
+                if (nextLength < limit) {
+                    document.querySelector("button.button-load").remove();
+                    memoDom.insertAdjacentHTML('afterend', noMoreMessage);
+                    btnRemove = 1;
+                }
+            } else {
+                document.querySelector("button.button-load").remove();
+                memoDom.insertAdjacentHTML('afterend', noMoreMessage);
+                btnRemove = 1;
             }
+        }).catch(error => {
+            console.error('Error fetching next page:', error);
+            document.querySelector("button.button-load").remove();
+            memoDom.insertAdjacentHTML('afterend', '<div class="no-more-notes">Error loading notes</div>');
+            btnRemove = 1;
         })
     } else {
             throw new Error('Invalid APIVersion');
@@ -152,13 +179,14 @@ document.addEventListener('click', function (event) {
             var btn = document.querySelector("button.button-load");
             btn.addEventListener("click", function () {
                 btn.textContent = 'Loading...';
-                updateHTMl(nextDom)
-                if (nextLength < limit) { // Returned data count is less than the limit, hide
-                    document.querySelector("button.button-load").remove()
-                    btnRemove = 1
-                    return
+                if (nextDom && nextDom.length > 0) {
+                    updateHTMl(nextDom);
+                    getNextList();
+                } else {
+                    document.querySelector("button.button-load").remove();
+                    memoDom.insertAdjacentHTML('afterend', noMoreMessage);
+                    btnRemove = 1;
                 }
-                getNextList()
             });
             
         }        
@@ -187,6 +215,7 @@ function getTagFirstList() {
             var nowLength = resdata.length
             if (nowLength < limit) { // Returned data count is less than the limit, remove "Load more" button and stop preloading
                 document.querySelector("button.button-load").remove()
+                memoDom.insertAdjacentHTML('afterend', noMoreMessage);
                 btnRemove = 1
                 return
             }

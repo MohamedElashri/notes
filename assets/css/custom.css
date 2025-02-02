@@ -76,3 +76,14 @@ blockquote p {
 .memos .memo-content {
     white-space: pre-line;
 }
+
+/* No more notes message */
+.no-more-notes {
+    text-align: center;
+    padding: 1rem;
+    color: #666;
+    font-style: italic;
+    margin: 1rem 0;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+}
