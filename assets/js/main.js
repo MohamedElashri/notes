@@ -306,6 +306,17 @@ function updateHTMl(data) {
             }, 100);
         }
 
+        // Initialize KaTeX rendering
+        setTimeout(() => {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false}
+                ],
+                throwOnError: false
+            });
+        }, 100);
+
         // Parse built-in resource files
         if (memo.APIVersion === 'new') {
             if (data[i].resources && data[i].resources.length > 0) {
