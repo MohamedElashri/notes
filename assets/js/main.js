@@ -1,5 +1,7 @@
 /*
-* 这是从非常早期的 Memos 版本，慢慢增加功能，变成这一坨的。如果从现在版本重构，至少可以减少 2/3 的代码。如果集成到自己的博客或者网页上，只需要取其中一部分就可以，现在 GPT 很方便，可直接从头生成优雅简洁的代码。
+* This code has evolved from an early version of Memos, gradually adding features. If refactoring from the current version,
+* it could be reduced by at least 2/3. For integration into your own blog or webpage, only a portion is needed.
+* You can now easily generate elegant and concise code from scratch using GPT.
 */
 
 // Memos Start
@@ -44,17 +46,17 @@ var tag='';
 var nextPageToken = '';
 var btnRemove = 0
 var memoDom = document.querySelector(memo.domId);
-var load = '<button class="load-btn button-load">努力加载中……</button>'
+var load = '<button class="load-btn button-load">Loading...</button>'
 if (memoDom) {
     memoDom.insertAdjacentHTML('afterend', load);
-    getFirstList() // 首次加载数据
-    // 添加 button 事件监听器
+    getFirstList() // Initial data load
+    // Add button event listener
     btnRemove = 0;
     var btn = document.querySelector("button.button-load");
     btn.addEventListener("click", function () {
-        btn.textContent = '努力加载中……';
+        btn.textContent = 'Loading...';
         updateHTMl(nextDom)
-        if (nextLength < limit) { // 返回数据条数小于限制条数，隐藏
+        if (nextLength < limit) { // Returned data count is less than the limit, hide
             document.querySelector("button.button-load").remove()
             btnRemove = 1
             return
@@ -71,7 +73,7 @@ function getFirstList() {
             updateHTMl(resdata)
             nextPageToken = resdata.nextPageToken;
             var nowLength = resdata.length
-            if (nowLength < limit) { // 返回数据条数小于 limit 则直接移除“加载更多”按钮，中断预加载
+            if (nowLength < limit) { // Returned data count is less than the limit, remove "Load more" button and stop preloading
                 document.querySelector("button.button-load").remove()
                 btnRemove = 1
                 return
@@ -84,7 +86,7 @@ function getFirstList() {
         fetch(memoUrl_first).then(res => res.json()).then(resdata => {
             updateHTMl(resdata)
             var nowLength = resdata.length
-            if (nowLength < limit) { // 返回数据条数小于 limit 则直接移除“加载更多”按钮，中断预加载
+            if (nowLength < limit) { // Returned data count is less than the limit, remove "Load more" button and stop preloading
                 document.querySelector("button.button-load").remove()
                 btnRemove = 1
                 return
@@ -98,7 +100,7 @@ function getFirstList() {
     }
 }
 
-// 预加载下一页数据
+// Preload next page data
 function getNextList() {
     if (memo.APIVersion === 'new') {
         var memoUrl_next = memoUrl + '&pageSize=' + limit + '&pageToken=' + nextPageToken;
@@ -108,7 +110,7 @@ function getNextList() {
             nextLength = nextDom.length
             page++
             offset = limit * (page - 1)
-            if (nextLength < 1) { // 返回数据条数为 0 ，隐藏
+            if (nextLength < 1) { // Returned data count is 0, hide
                 document.querySelector("button.button-load").remove()
                 btnRemove = 1
                 return
@@ -126,7 +128,7 @@ function getNextList() {
             nextLength = nextDom.length
             page++
             offset = limit * (page - 1)
-            if (nextLength < 1) { // 返回数据条数为 0 ，隐藏
+            if (nextLength < 1) { // Returned data count is 0, hide
                 document.querySelector("button.button-load").remove()
                 btnRemove = 1
                 return
@@ -137,21 +139,21 @@ function getNextList() {
     }
 }
 
-// 标签选择
+// Tag selection
 document.addEventListener('click', function (event) {
     var target = event.target;
     if (target.tagName.toLowerCase() === 'a' && target.getAttribute('href').startsWith('#')) {
         event.preventDefault();
-        tag = target.getAttribute('href').substring(1); // 获取标签名
-        if (btnRemove) {    // 如果 botton 被 remove
+        tag = target.getAttribute('href').substring(1); // Get tag name
+        if (btnRemove) {    // If button is removed
             btnRemove = 0;
             memoDom.insertAdjacentHTML('afterend', load);
-            // 添加 button 事件监听器
+            // Add button event listener
             var btn = document.querySelector("button.button-load");
             btn.addEventListener("click", function () {
-                btn.textContent = '努力加载中……';
+                btn.textContent = 'Loading...';
                 updateHTMl(nextDom)
-                if (nextLength < limit) { // 返回数据条数小于限制条数，隐藏
+                if (nextLength < limit) { // Returned data count is less than the limit, hide
                     document.querySelector("button.button-load").remove()
                     btnRemove = 1
                     return
@@ -162,11 +164,11 @@ document.addEventListener('click', function (event) {
         }        
         getTagFirstList();
         var filterElem = document.getElementById('tag-filter');
-        filterElem.style.display = 'block';    // 显示过滤器
+        filterElem.style.display = 'block';    // Show filter
         var tags = document.getElementById('tags');
         var tagresult = `Filter: <span class='tag-span'><a rel='noopener noreferrer' href=''>#${tag}</a></span>`
         tags.innerHTML = tagresult;
-        scrollTo(0,0);    // 回到顶部
+        scrollTo(0,0);    // Go to top
     }
 });
 
@@ -183,7 +185,7 @@ function getTagFirstList() {
         fetch(memoUrl_tag).then(res => res.json()).then(resdata => {
             updateHTMl(resdata);
             var nowLength = resdata.length
-            if (nowLength < limit) { // 返回数据条数小于 limit 则直接移除“加载更多”按钮，中断预加载
+            if (nowLength < limit) { // Returned data count is less than the limit, remove "Load more" button and stop preloading
                 document.querySelector("button.button-load").remove()
                 btnRemove = 1
                 return
@@ -196,28 +198,28 @@ function getTagFirstList() {
         throw new Error('Invalid APIVersion');
     }
 }
-// 标签选择 end
+// Tag selection end
 
-// 插入 html
+// Insert HTML
 function updateHTMl(data) {
     var memoResult = "", resultAll = "";
 
-    // 解析 TAG 标签，添加样式
+    // Parse TAG tag, add style
     const TAG_REG = /#([^\s#]+?) /g;
 
-    // 解析 BiliBili
+    // Parse Bilibili
     const BILIBILI_REG = /<a\shref="https:\/\/www\.bilibili\.com\/video\/((av[\d]{1,10})|(BV([\w]{10})))\/?">.*<\/a>/g;
-    // 解析网易云音乐
+    // Parse NetEase Music
     const NETEASE_MUSIC_REG = /<a\shref="https:\/\/music\.163\.com\/.*id=([0-9]+)".*?>.*<\/a>/g;
-    // 解析 QQ 音乐
-    const QQMUSIC_REG = /<a\shref="https\:\/\/y\.qq\.com\/.*(\/[0-9a-zA-Z]+)(\.html)?".*?>.*?<\/a>/g;
-    // 解析腾讯视频
+    // Parse QQ Music
+    const QQMUSIC_REG = /<a\shref="https\:\/\/y\.qq\.com\/n\/yqq\/song$1.html".*?>.*?<\/a>/g;
+    // Parse Tencent Video
     const QQVIDEO_REG = /<a\shref="https:\/\/v\.qq\.com\/.*\/([a-z|A-Z|0-9]+)\.html".*?>.*<\/a>/g;
-    // 解析 Spotify
+    // Parse Spotify
     const SPOTIFY_REG = /<a\shref="https:\/\/open\.spotify\.com\/(track|album)\/([\s\S]+)".*?>.*<\/a>/g;
-    // 解析优酷视频
+    // Parse Youku Video
     const YOUKU_REG = /<a\shref="https:\/\/v\.youku\.com\/.*\/id_([a-z|A-Z|0-9|==]+)\.html".*?>.*<\/a>/g;
-    //解析 Youtube
+    // Parse YouTube
     const YOUTUBE_REG = /<a\shref="https:\/\/www\.youtube\.com\/watch\?v\=([a-z|A-Z|0-9]{11})\".*?>.*<\/a>/g;
 
     // Memos Content
@@ -249,7 +251,7 @@ function updateHTMl(data) {
             .replace(YOUKU_REG, "<div class='video-wrapper'><iframe src='https://player.youku.com/embed/$1' frameborder=0 'allowfullscreen'></iframe></div>")
             .replace(YOUTUBE_REG, "<div class='video-wrapper'><iframe src='https://www.youtube.com/embed/$1' title='YouTube video player' frameborder='0' allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture' allowfullscreen title='YouTube Video'></iframe></div>")
 
-        // 解析内置资源文件
+        // Parse built-in resource files
         if (memo.APIVersion === 'new') {
             if (data[i].resources && data[i].resources.length > 0) {
                 var resourceList = data[i].resources; 
@@ -327,15 +329,15 @@ function updateHTMl(data) {
         if (memo.APIVersion === 'new') {
             var relativeTime = getRelativeTime(new Date(data[i].createTime));
             var avatarurl = memo.host + 'file/users/' + memo.creatorId + '/avatar'; 
-            //新版自动获取头像
+            // New version automatically gets avatar
         } else if (memo.APIVersion === 'legacy') {
             var relativeTime = getRelativeTime(new Date(data[i].createdTs * 1000));
             var avatarurl = '../img/avatar.jpg';
-            //旧版自定义头像
+            // Old version customizes avatar
         } else {
                 throw new Error('Invalid APIVersion');
         }
-        memoResult += '<li class="timeline"><div class="memos__content" style="--avatar-url: url(' + avatarurl + ')"><div class="memos__text"><div class="memos__userinfo"><div>' + memo.name + '</div><div><svg viewBox="0 0 24 24" aria-label="认证账号" class="memos__verify"><g><path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.415-.165-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .494.083.964.237 1.4-1.272.65-2.147 2.018-2.147 3.6 0 1.495.782 2.798 1.942 3.486-.02.17-.032.34-.032.514 0 2.21 1.708 4 3.818 4 .47 0 .92-.086 1.335-.25.62 1.334 1.926 2.25 3.437 2.25 1.512 0 2.818-.916 3.437-2.25.415.163.865.248 1.336.248 2.11 0 3.818-1.79 3.818-4 0-.174-.012-.344-.033-.513 1.158-.687 1.943-1.99 1.943-3.484zm-6.616-3.334l-4.334 6.5c-.145.217-.382.334-.625.334-.143 0-.288-.04-.416-.126l-.115-.094-2.415-2.415c-.293-.293-.293-.768 0-1.06s.768-.294 1.06 0l1.77 1.767 3.825-5.74c.23-.345.696-.436 1.04-.207.346.23.44.696.21 1.04z"></path></g></svg></div><div class="memos__id">@' + memo.username + '</div></div><p>' + memoContREG + '</p></div><div class="memos__meta"><small class="memos__date">' + relativeTime + ' • From「<a href="' + memo.host + 'm/' + uId + '" target="_blank">Memos</a>」</small></div></div></li>'
+        memoResult += '<li class="timeline"><div class="memos__content" style="--avatar-url: url(' + avatarurl + ')"><div class="memos__text"><div class="memos__userinfo"><div>' + memo.name + '</div><div><svg viewBox="0 0 24 24" aria-label="Verified account" class="memos__verify"><g><path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.415-.165-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .494.083.964.237 1.4-1.272.65-2.147 2.018-2.147 3.6 0 1.495.782 2.798 1.942 3.486-.02.17-.032.34-.032.514 0 2.21 1.708 4 3.818 4 .47 0 .92-.086 1.335-.25.62 1.334 1.926 2.25 3.437 2.25 1.512 0 2.818-.916 3.437-2.25.415.163.865.248 1.336.248 2.11 0 3.818-1.79 3.818-4 0-.174-.012-.344-.033-.513 1.158-.687 1.943-1.99 1.943-3.484zm-6.616-3.334l-4.334 6.5c-.145.217-.382.334-.625.334-.143 0-.288-.04-.416-.126l-.115-.094-2.415-2.415c-.293-.293-.293-.768 0-1.06s.768-.294 1.06 0l1.77 1.767 3.825-5.74c.23-.345.696-.436 1.04-.207.346.23.44.696.21 1.04z"></path></g></svg></div><div class="memos__id">@' + memo.username + '</div></div><p>' + memoContREG + '</p></div><div class="memos__meta"><small class="memos__date">' + relativeTime + ' • From「<a href="' + memo.host + 'm/' + uId + '" target="_blank">Memos</a>」</small></div></div></li>'
     }
     var memoBefore = '<ul class="">'
     var memoAfter = '</ul>'
@@ -344,14 +346,14 @@ function updateHTMl(data) {
     if (memo.doubanAPI) {
         fetchDB();
     }
-    document.querySelector('button.button-load').textContent = '加载更多';
+    document.querySelector('button.button-load').textContent = 'Load more';
 }
 // Memos End
 
-// 解析豆瓣 Start
-// 文章内显示豆瓣条目 https://immmmm.com/post-show-douban-item/
-// 解析豆瓣必须要 API，请找朋友要权限，或自己按 https://github.com/eallion/douban-api-rs 这个架设 API，非常简单，资源消耗很少
-// 已内置样式，修改 API 即可使用
+// Parse Douban Start
+// Display Douban items in articles https://immmmm.com/post-show-douban-item/
+// Parsing Douban requires API, ask a friend for permission or set up your own API according to https://github.com/eallion/douban-api-rs, very simple and low resource consumption
+// Built-in styles, modify API to use
 function fetchDB() {
     var dbAPI = memo.doubanAPI;
     var dbA = document.querySelectorAll(".timeline a[href*='douban.com/subject/']:not([rel='noreferrer'])") || '';
@@ -397,7 +399,7 @@ function movieShow(fetch_href, fetch_item) {
     var storage = localStorage.getItem(fetch_item);
     var data = JSON.parse(storage);
     var db_star = Math.ceil(data.rating);
-    var db_html = "<div class='post-preview'><div class='post-preview--meta'><div class='post-preview--middle'><h4 class='post-preview--title'><a target='_blank' rel='noreferrer' href='" + fetch_href + "'>《" + data.name + "》</a></h4><div class='rating'><div class='rating-star allstar" + db_star + "'></div><div class='rating-average'>" + data.rating + "</div></div><time class='post-preview--date'>导演：" + data.director + " / 类型：" + data.genre + " / " + data.year + "</time><section class='post-preview--excerpt'>" + data.intro.replace(/\s*/g, "") + "</section></div></div><img referrer-policy='no-referrer' loading='lazy' class='post-preview--image' src=" + data.img + "></div>"
+    var db_html = "<div class='post-preview'><div class='post-preview--meta'><div class='post-preview--middle'><h4 class='post-preview--title'><a target='_blank' rel='noreferrer' href='" + fetch_href + "'>《" + data.name + "》</a></h4><div class='rating'><div class='rating-star allstar" + db_star + "'></div><div class='rating-average'>" + data.rating + "</div></div><time class='post-preview--date'>Director：" + data.director + " / Type：" + data.genre + " / " + data.year + "</time><section class='post-preview--excerpt'>" + data.intro.replace(/\s*/g, "") + "</section></div></div><img referrer-policy='no-referrer' loading='lazy' class='post-preview--image' src=" + data.img + "></div>"
     var db_div = document.createElement("div");
     var qs_href = ".timeline a[href='" + fetch_href + "']"
     var qs_dom = document.querySelector(qs_href)
@@ -409,14 +411,14 @@ function bookShow(fetch_href, fetch_item) {
     var storage = localStorage.getItem(fetch_item);
     var data = JSON.parse(storage);
     var db_star = Math.ceil(data.rating.average);
-    var db_html = "<div class='post-preview'><div class='post-preview--meta'><div class='post-preview--middle'><h4 class='post-preview--title'><a target='_blank' rel='noreferrer' href='" + fetch_href + "'>《" + data.title + "》</a></h4><div class='rating'><div class='rating-star allstar" + db_star + "'></div><div class='rating-average'>" + data.rating.average + "</div></div><time class='post-preview--date'>作者：" + data.author + " </time><section class='post-preview--excerpt'>" + data.summary.replace(/\s*/g, "") + "</section></div></div><img referrer-policy='no-referrer' loading='lazy' class='post-preview--image' src=" + data.images.medium + "></div>"
+    var db_html = "<div class='post-preview'><div class='post-preview--meta'><div class='post-preview--middle'><h4 class='post-preview--title'><a target='_blank' rel='noreferrer' href='" + fetch_href + "'>《" + data.title + "》</a></h4><div class='rating'><div class='rating-star allstar" + db_star + "'></div><div class='rating-average'>" + data.rating.average + "</div></div><time class='post-preview--date'>Author：" + data.author + " </time><section class='post-preview--excerpt'>" + data.summary.replace(/\s*/g, "") + "</section></div></div><img referrer-policy='no-referrer' loading='lazy' class='post-preview--image' src=" + data.images.medium + "></div>"
     var db_div = document.createElement("div");
     var qs_href = ".timeline a[href='" + fetch_href + "']"
     var qs_dom = document.querySelector(qs_href)
     qs_dom.parentNode.replaceChild(db_div, qs_dom);
     db_div.innerHTML = db_html
 }
-// 解析豆瓣 End
+// Parse Douban End
 
 // Images lightbox
 window.ViewImage && ViewImage.init('.container img');
@@ -436,10 +438,10 @@ function getTotal() {
                     var pageSize = resdata.memos.map(memo => {
                         const match = memo.name.match(/\d+/);
                         return match ? parseInt(match[0], 10) : null;
-                    }).filter(num => num !== null)[0]; // 取第一个匹配到的数字
+                    }).filter(num => num !== null)[0]; // Get the first matched number
 
                     if (pageSize) {
-                        // 第二次请求：使用获取到的 pageSize
+                        // Second request: use the obtained pageSize
                         totalUrl = `${memos}/api/v1/memos?pageSize=${pageSize}&filter=${encodeURIComponent(filter)}`;
                         return fetch(totalUrl);
                     } else {
