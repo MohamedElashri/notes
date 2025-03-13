@@ -13,12 +13,12 @@ mermaid.initialize({
 
 // Memos Start
 var memo = {
-    host: 'https://demo.usememos.com/',
+    host: 'https://memos.elashri.net/',
     limit: '10',
-    creatorId: '101',
+    creatorId: '1',
     domId: '#memos',
-    username: 'Admin',
-    name: 'Administrator',
+    username: 'melashri',
+    name: 'Mohamed Elashri',
     APIVersion: 'new',
     language: 'en',
     total: true,
@@ -79,19 +79,29 @@ function getFirstList() {
     let memoUrl_first;
     if (memo.APIVersion === 'new') {
         memoUrl_first = memoUrl + '&pageSize=' + limit;
-        fetch(memoUrl_first).then(res => res.json()).then(resdata => {
-            updateHTMl(resdata)
-            nextPageToken = resdata.nextPageToken;
-            var nowLength = resdata.length
-            if (nowLength < limit) { // Returned data count is less than the limit, remove "Load more" button and stop preloading
-                document.querySelector("button.button-load").remove()
-                memoDom.insertAdjacentHTML('afterend', noMoreMessage);
-                btnRemove = 1
-                return
-            }
-            page++
-            getNextList()
-        });
+        fetch(memoUrl_first)
+            .then(res => {
+                if (!res.ok) throw new Error('Network response was not ok');
+                return res.json();
+            })
+            .then(resdata => {
+                if (!resdata) throw new Error('No data received');
+                updateHTMl(resdata);
+                nextPageToken = resdata.nextPageToken;
+                var nowLength = resdata.memos ? resdata.memos.length : 0;
+                if (nowLength < limit) {
+                    document.querySelector("button.button-load")?.remove();
+                    memoDom.insertAdjacentHTML('afterend', noMoreMessage);
+                    btnRemove = 1;
+                    return;
+                }
+                page++;
+                getNextList();
+            })
+            .catch(error => {
+                console.error('Error fetching memos:', error);
+                memoDom.innerHTML = '<p>Error loading memos. Please try again later.</p>';
+            });
     } else if (memo.APIVersion === 'legacy') {
         memoUrl_first = memoUrl + "&limit=" + limit;
         fetch(memoUrl_first).then(res => res.json()).then(resdata => {
@@ -238,6 +248,26 @@ function getTagFirstList() {
 
 // Insert HTML
 function updateHTMl(data) {
+    if (!data) {
+        console.error('No data provided to updateHTMl');
+        return;
+    }
+
+    // Memos Content
+    let memoList;
+    if (memo.APIVersion === 'new') {
+        memoList = data.memos || [];
+    } else if (memo.APIVersion === 'legacy') {
+        memoList = data || [];
+    } else {
+        throw new Error('Invalid APIVersion');
+    }
+
+    if (!Array.isArray(memoList)) {
+        console.error('Invalid memos data format');
+        return;
+    }
+
     var memoResult = "", resultAll = "";
 
     // Parse TAG tag, add style
@@ -258,24 +288,16 @@ function updateHTMl(data) {
     // Parse YouTube
     const YOUTUBE_REG = /<a\shref="https:\/\/www\.youtube\.com\/watch\?v\=([a-z|A-Z|0-9]{11})\".*?>.*<\/a>/g;
 
-    // Memos Content
-    if (memo.APIVersion === 'new') {
-        data = data.memos
-    } else if (memo.APIVersion === 'legacy') {
-        data = data
-    } else {
-            throw new Error('Invalid APIVersion');
-    }
-    for (var i = 0; i < data.length; i++) {
-        if (memo.APIVersion === 'new') {
-            var uId = data[i].uid
-        } else if (memo.APIVersion === 'legacy') {
-            var uId = data[i].id
-        } else {
-                throw new Error('Invalid APIVersion');
-        }
-        var memoContREG = data[i].content
-            .replace(TAG_REG, "<span class='tag-span'><a rel='noopener noreferrer' href='#$1'>#$1</a></span>")
+    for (var i = 0; i < memoList.length; i++) {
+        const currentMemo = memoList[i];
+        if (!currentMemo) continue;
+
+        const uId = memo.APIVersion === 'new' ? currentMemo.uid : currentMemo.id;
+        if (!uId) continue;
+
+        let memoContREG = currentMemo.content || '';
+        memoContREG = memoContREG
+            .replace(TAG_REG, "<span class='tag-span'><a rel='noopener noreferrer' href='#$1'>#$1</a></span>");
 
         memoContREG = marked.parse(memoContREG)
             .replace(BILIBILI_REG, "<div class='video-wrapper'><iframe src='//www.bilibili.com/blackboard/html5mobileplayer.html?bvid=$1&as_wide=1&high_quality=1&danmaku=0' scrolling='no' border='0' frameborder='no' framespacing='0' allowfullscreen='true' style='position:absolute;height:100%;width:100%;'></iframe></div>")
@@ -319,8 +341,8 @@ function updateHTMl(data) {
 
         // Parse built-in resource files
         if (memo.APIVersion === 'new') {
-            if (data[i].resources && data[i].resources.length > 0) {
-                var resourceList = data[i].resources; 
+            if (currentMemo.resources && currentMemo.resources.length > 0) {
+                var resourceList = currentMemo.resources; 
                 var imgUrl = '', resUrl = '';
 
                 imgUrl += '<div class="resource-wrapper"><div class="images-wrapper" style="display: flex; flex-wrap: wrap; gap: 10px;">';
@@ -359,8 +381,8 @@ function updateHTMl(data) {
                 }
             }
         } else if (memo.APIVersion === 'legacy') {
-            if (data[i].resourceList && data[i].resourceList.length > 0) {
-                var resourceList = data[i].resourceList;
+            if (currentMemo.resourceList && currentMemo.resourceList.length > 0) {
+                var resourceList = currentMemo.resourceList;
                 var imgUrl = '', resUrl = '', resImgLength = 0;
                 for (var j = 0; j < resourceList.length; j++) {
                     var resType = resourceList[j].type.slice(0, 5);
@@ -393,11 +415,11 @@ function updateHTMl(data) {
                 throw new Error('Invalid APIVersion');
         }
         if (memo.APIVersion === 'new') {
-            var relativeTime = getRelativeTime(new Date(data[i].createTime));
+            var relativeTime = getRelativeTime(new Date(currentMemo.createTime));
             var avatarurl = memo.host + 'file/users/' + memo.creatorId + '/avatar'; 
             // New version automatically gets avatar
         } else if (memo.APIVersion === 'legacy') {
-            var relativeTime = getRelativeTime(new Date(data[i].createdTs * 1000));
+            var relativeTime = getRelativeTime(new Date(currentMemo.createdTs * 1000));
             var avatarurl = '../img/avatar.jpg';
             // Old version customizes avatar
         } else {
